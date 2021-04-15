@@ -178,7 +178,7 @@ jobs:
       - name: Prepare symbols for action artifacts
         run: cd main && python ${{github.workspace}}/main/.ci/prepare_symbols.py
 
-      - name: Upload Symbols to action artifacts
+      - name: Upload Symbols to  action artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Etterna Symbols - ${{github.sha}}
