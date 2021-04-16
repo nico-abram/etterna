@@ -1,3 +1,6 @@
+# Originally based on the (Now archived/unmantained) LuaDist luajit cmake file
+# Now modified based on https://github.com/WohlSoft/LuaJIT
+
 # Copyright (C) 2007-2013 LuaDist.
 # Copyright (c) 2017 George White.
 # Created by Peter Drahoš
