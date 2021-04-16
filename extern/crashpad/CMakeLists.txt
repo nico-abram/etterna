@@ -79,7 +79,7 @@ endif()
 
 set(GN_WIN_LINK_FLAG "")	# Dynamically link to C runtime library
 if(WIN32)
-	set(GN_WIN_LINK_FLAG /MT)	# Dynamically link to C runtime library
+	set(GN_WIN_LINK_FLAG /MT /GL-)	# Dynamically link to C runtime library
 	if(CMAKE_BUILD_TYPE STREQUAL Debug) #TODO: Fix for multi-config generators
 		string(APPEND GN_WIN_LINK_FLAG d)
 	endif()
@@ -106,7 +106,7 @@ ExternalProject_Add_Step(crashpad_init gn_configure
 	ALWAYS 1
 	USES_TERMINAL 1
 	WORKING_DIRECTORY ${SOURCE_DIR}
-	COMMAND ${EXE_DEPOT_GN} gen ${BINARY_DIR} "--args=target_cpu=\"${GN_TARGET_CPU}\" is_debug=${GN_IS_DEBUG} extra_cflags=\"/GL- ${GN_WIN_LINK_FLAG}\"" && ${EXE_DEPOT_NINJA} -C ${BINARY_DIR} crashpad_handler
+	COMMAND ${EXE_DEPOT_GN} gen ${BINARY_DIR} "--args=target_cpu=\"${GN_TARGET_CPU}\" is_debug=${GN_IS_DEBUG} extra_cflags=\"${GN_WIN_LINK_FLAG}\"" && ${EXE_DEPOT_NINJA} -C ${BINARY_DIR} crashpad_handler
 	BYPRODUCTS ${OUTPUT_LIBS})
 
 # Build Project - "ninja client crashpad_handler" with the last "client" and "crashpad_handler" being the targets
