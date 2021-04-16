@@ -139,6 +139,7 @@ set(LJLIB_C
   ${LUAJIT_SOURCE_DIR}/src/lib_jit.c
   ${LUAJIT_SOURCE_DIR}/src/lib_ffi.c
   ${LUAJIT_SOURCE_DIR}/src/lib_package.c
+  ${LUAJIT_SOURCE_DIR}/src/lib_buffer.c
 )
 
 ## GENERATE VM
@@ -155,6 +156,12 @@ set(DASM_T ${LUAJIT_SOURCE_DIR}/src/host/buildvm_arch.h)
 set(DASM_FLAGS -D FPU -D HFABI)
 set(DASM_ARCH x86)
 
+# 32bit vs 64bit
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 OR "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
+  list(APPEND DASM_FLAGS -D P64)
+  set(DASM_ARCH x64)
+endif()
+
 # All ARM hosts (iOS, Android, Raspberry Pi etc.)
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(arm|ARM).*")
   set(DASM_ARCH arm)
@@ -165,11 +172,6 @@ endif()
 # Windows is ... special
 if(WIN32)
   list(APPEND DASM_FLAGS -D WIN)
-endif()
-
-# 32bit vs 64bit
-if(CMAKE_SIZEOF_VOID_P EQUAL 8 OR "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
-  list(APPEND DASM_FLAGS -D P64)
 endif()
 
 if(NOT LUAJIT_DISABLE_JIT)
@@ -348,6 +350,9 @@ set(LJCORE_C
   ${LUAJIT_SOURCE_DIR}/src/lj_vmevent.c
   ${LUAJIT_SOURCE_DIR}/src/lj_vmevent.h
   ${LUAJIT_SOURCE_DIR}/src/lj_vmmath.c
+  ${LUAJIT_SOURCE_DIR}/src/lj_prng.c
+  ${LUAJIT_SOURCE_DIR}/src/lj_serialize.c
+  ${LUAJIT_SOURCE_DIR}/src/lj_serialize.h
   ${LJLIB_C}
 )
 
