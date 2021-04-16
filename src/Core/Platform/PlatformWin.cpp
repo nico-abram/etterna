@@ -215,7 +215,7 @@ namespace Core::Platform {
 		GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numLanguages, nullptr, &languageBufferSize);
 
         // Then, put all those language codes in a buffer
-		std::vector<wchar_t> languages(static_cast<int>(languageBufferSize), 0);
+		std::vector<wchar_t> languages(languageBufferSize + 1, 0);
         GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numLanguages, languages.data(), &languageBufferSize);
 
         // Convert to std::string

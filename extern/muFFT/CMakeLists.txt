@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_C_STANDARD 99)
 project(muFFT LANGUAGES C)
 
+
 if (CMAKE_COMPILER_IS_GNUCC OR (${CMAKE_C_COMPILER_ID} MATCHES "Clang"))
     # Cannot safely use -ffast-math, breaks on GCC due to reliance on -0.0f behavior.
     set(MUFFT_C_FLAGS -Wall -Wextra)
@@ -43,6 +44,14 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
         if (CMAKE_COMPILER_IS_GNUCC OR (${CMAKE_C_COMPILER_ID} MATCHES "Clang"))
             target_compile_options(muFFT-sse3 PRIVATE -msse -msse3 -mno-avx)
         endif()
+        if(MSVC)
+            # This is to get clang-cl to work, otherwise it complains about using intrinsics that are not allowed by the target features
+            # We only really want to enable SSE3 here, but I could not find the cl.exe flag to enable *just* that
+            # See https://bugs.llvm.org/show_bug.cgi?id=20213 for some more info. We use -msse3 but that is not a valid cl.exe flag
+            # Thankfully, it just ignores unknown flags. The other idea I had is using /ARCH:AVX but I'm scared that the compiler will 
+            # actually use AVX instructions instead of just the SSE3 intrinsics used and that will break on CPUs that have SSE3 and not AVX
+            target_compile_options(muFFT-sse3 PRIVATE -msse3)
+        endif()
         target_compile_options(muFFT-sse3 PRIVATE ${MUFFT_C_FLAGS})
         target_compile_definitions(muFFT PRIVATE MUFFT_HAVE_SSE3)
         target_link_libraries(muFFT PRIVATE muFFT-sse3)
@@ -52,6 +61,10 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
         add_library(muFFT-avx STATIC x86/kernel.avx.c)
         if (CMAKE_COMPILER_IS_GNUCC OR (${CMAKE_C_COMPILER_ID} MATCHES "Clang"))
             target_compile_options(muFFT-avx PRIVATE -msse -msse3 -mavx)
+        endif()
+        if(MSVC)
+            # This is to get clang-cl to work, otherwise it complains about using intrinsics that are not allowed
+            target_compile_options(muFFT-avx PRIVATE /arch:AVX)
         endif()
         target_compile_options(muFFT-avx PRIVATE ${MUFFT_C_FLAGS})
         target_compile_definitions(muFFT PRIVATE MUFFT_HAVE_AVX)
