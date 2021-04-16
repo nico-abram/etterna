@@ -41,6 +41,7 @@ set(LUA_IDSIZE 60 CACHE STRING "gives the maximum size for the description of th
 set(LUA_PROMPT "> " CACHE STRING "Is the default prompt used by stand-alone Lua.")
 set(LUA_PROMPT2 ">> " CACHE STRING "Is the default continuation prompt used by stand-alone Lua.")
 set(LUA_MAXINPUT 512 CACHE STRING "Is the maximum length for an input line in the stand-alone interpreter.")
+set(LUAJIT_NO_UNWIND OFF CACHE BOOL "Disable the UNWIND")
 
 # Version
 set(MAJVER 2)
@@ -90,7 +91,7 @@ set(LUA_CPATH_DEFAULT "./?${LUA_MODULE_SUFFIX};${LUA_DIR}${LUA_CDIR}/?${LUA_MODU
 
 if(WIN32 AND NOT CYGWIN)
   # Windows systems
-  add_definitions(-DLUAJIT_OS=LUAJIT_OS_WINDOWS)
+  #add_definitions(-DLUAJIT_OS=LUAJIT_OS_WINDOWS)
   option(LUA_BUILD_WLUA "Build wluajit interpreter for no-console applications." ON)
   set(LJVM_MODE peobj)
   # Paths (Double escapes needed)
@@ -123,25 +124,32 @@ if(LUA_USE_DLOPEN)
   list(APPEND LIBS dl)
 endif()
 
+set(LJ_DEFINITIONS "")
+if(NOT LUAJIT_NO_UNWIND AND NOT IOS)
+  set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_UNWIND_EXTERNAL)
+  set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_UNWIND_EXTERNAL)
+endif()
 
 set(TARGET_OS_FLAGS "")
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_LINUX)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_LINUX)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_WINDOWS)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_WINDOWS)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OSX -D TARGET_OS_IPHONE=1)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_OSX -D TARGET_OS_IPHONE=1)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OSX)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_OSX)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_LINUX)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_LINUX)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_POSIX)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_POSIX)
 elseif ("${CMAKE_SYSTEM_NAME}" MATCHES "(Open|Free|Net)BSD")
-  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_BSD)
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -DLUAJIT_OS=LUAJIT_OS_BSD)
 else()
   set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OTHER)
 endif()
+set(LJ_DEFINITIONS ${LJ_DEFINITIONS} ${TARGET_OS_FLAGS})
+
 
 ## SOURCES
 
@@ -382,10 +390,10 @@ target_include_directories(lua
 	PUBLIC "${LUAJIT_SOURCE_DIR}/src")
 target_link_libraries(lua ${LIBS})
 set_target_properties(lua PROPERTIES LINKER_LANGUAGE C)
-target_compile_definitions(lua PRIVATE ${TARGET_OS_FLAGS})
+target_compile_definitions(lua PRIVATE ${LJ_DEFINITIONS})
 
 #add_executable(luajit ${LUAJIT_SOURCE_DIR}/src/luajit.c)
 add_library(luajit STATIC ${LUAJIT_SOURCE_DIR}/src/luajit.c)
 set_target_properties(luajit PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(luajit lua)
-target_compile_definitions(luajit PRIVATE ${TARGET_OS_FLAGS})
+target_compile_definitions(luajit PRIVATE ${LJ_DEFINITIONS})
