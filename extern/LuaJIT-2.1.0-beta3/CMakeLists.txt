@@ -123,6 +123,26 @@ if(LUA_USE_DLOPEN)
   list(APPEND LIBS dl)
 endif()
 
+
+set(TARGET_OS_FLAGS "")
+if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_LINUX)
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_WINDOWS)
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OSX -D TARGET_OS_IPHONE=1)
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OSX)
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_LINUX)
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Haiku")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_POSIX)
+elseif ("${CMAKE_SYSTEM_NAME}" MATCHES "(Open|Free|Net)BSD")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_BSD)
+else()
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OTHER)
+endif()
+
 ## SOURCES
 
 set(LJLIB_C
@@ -362,8 +382,10 @@ target_include_directories(lua
 	PUBLIC "${LUAJIT_SOURCE_DIR}/src")
 target_link_libraries(lua ${LIBS})
 set_target_properties(lua PROPERTIES LINKER_LANGUAGE C)
+target_compile_definitions(lua PRIVATE ${TARGET_OS_FLAGS})
 
 #add_executable(luajit ${LUAJIT_SOURCE_DIR}/src/luajit.c)
 add_library(luajit STATIC ${LUAJIT_SOURCE_DIR}/src/luajit.c)
 set_target_properties(luajit PROPERTIES LINKER_LANGUAGE C)
 target_link_libraries(luajit lua)
+target_compile_definitions(luajit PRIVATE ${TARGET_OS_FLAGS})
