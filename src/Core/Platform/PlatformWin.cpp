@@ -104,7 +104,7 @@ void InvalidParameterHandler(const wchar_t* szExpression, const wchar_t* szFunct
 	std::string file(strFile.begin(), strFile.end());
 
 	FAIL_M(ssprintf("Invalid Parameter In C Function %s\n File: %s Line %d\n Expression: %s",
-	  func, file, iLine, expr));
+	  func.c_str(), file.c_str(), iLine, expr.c_str()));
 }
 
 namespace Core::Platform {
@@ -215,11 +215,11 @@ namespace Core::Platform {
 		GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numLanguages, nullptr, &languageBufferSize);
 
         // Then, put all those language codes in a buffer
-		wchar_t languages(static_cast<int>(languageBufferSize));
-        GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numLanguages, &languages, &languageBufferSize);
+		std::vector<wchar_t> languages(static_cast<int>(languageBufferSize), 0);
+        GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numLanguages, languages.data(), &languageBufferSize);
 
         // Convert to std::string
-        std::wstring ws(&languages);
+		std::wstring ws(languages.data());
         std::string str(ws.begin(), ws.end() - 1);
 		return str;
 	}
