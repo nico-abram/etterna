@@ -100,8 +100,8 @@ jobs:
         cfg:
         - { name: i386, arch: Win32, ssl-dir: 'C:\Program Files (x86)\OpenSSL-Win32', compiler: cl }
         - { name: x64,  arch: x64,   ssl-dir: 'C:\Program Files\OpenSSL-Win64', compiler: cl }
-        - { name: i386, arch: Win32, ssl-dir: 'C:\Program Files (x86)\OpenSSL-Win32', compiler: clang }
-        - { name: x64,  arch: x64,   ssl-dir: 'C:\Program Files\OpenSSL-Win64', compiler: clang }
+        - { name: i386-clang, arch: Win32, ssl-dir: 'C:\Program Files (x86)\OpenSSL-Win32', compiler: clang }
+        - { name: x64-clang,  arch: x64,   ssl-dir: 'C:\Program Files\OpenSSL-Win64', compiler: clang }
 
     name: "Windows ${{matrix.cfg.name}}"
     runs-on: windows-2019
